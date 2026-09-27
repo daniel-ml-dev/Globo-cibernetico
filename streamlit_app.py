@@ -1,13 +1,12 @@
 import streamlit as st, pandas as pd, json, numpy as np
 import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide", page_title="FASHIONWOMEN ULTIMATE")
-st.markdown("<style>.stButton>button{background:linear-gradient(90deg,#FF00FF,#00FFFF);color:white;font-weight:900;border-radius:12px;border:none;width:100%;height:45px} div[data-testid='stMetric']{background:#111;border:1px solid #FF00FF;border-radius:10px;padding:10px}</style>", unsafe_allow_html=True)
+st.set_page_config(layout="wide", page_title="FASHIONWOMEN ULTIMATE FIXED")
+st.markdown("<style>.stButton>button{background:linear-gradient(90deg,#FF00FF,#00FFFF);color:white;font-weight:900;border-radius:12px;border:none;width:100%;height:42px} div[data-testid='stMetric']{background:#111;border:1px solid #FF00FF;border-radius:10px;padding:10px}</style>", unsafe_allow_html=True)
 
 if 'cart' not in st.session_state: st.session_state.cart=[]
 if 'sel' not in st.session_state: st.session_state.sel=None
 
-# CATALOGO ULTIMATE - TUDO QUE ENVOLVE MULHER - BEST SELLERS UK
 data = [
     {"id":1,"cat":"Joias","prod":"Colar Dourado Minimalista","price":19.99,"icon":"💍","lat":51.5074,"lon":-0.1278,"city":"Londres","stock":200,"viral":98,"wix":"https://fashionwomen.com.br"},
     {"id":2,"cat":"Joias","prod":"Brinco Argola Premium","price":12.99,"icon":"✨","lat":53.4808,"lon":-2.2426,"city":"Manchester","stock":300,"viral":95,"wix":"https://fashionwomen.com.br"},
@@ -23,21 +22,18 @@ data = [
 df=pd.DataFrame(data)
 df['prev']= (df['viral']*1.5 + np.random.randint(10,30,10)).astype(int)
 
-# SIDEBAR = LOJA
 with st.sidebar:
     st.title("🛒 LOJA GLOBO")
     if st.session_state.cart:
-        total=sum(i['price'] for i in st.session_state.cart)
+        total=sum([float(x['price']) for x in st.session_state.cart])
         st.subheader(f"Carrinho: {len(st.session_state.cart)} itens")
         for i in st.session_state.cart: st.write(f"{i['icon']} {i['prod']} £{i['price']}")
         st.metric("TOTAL", f"£{total:.2f}")
         st.link_button("💳 FINALIZAR NA WIX", "https://fashionwomen.com.br/cart", use_container_width=True)
         if st.button("Limpar Carrinho"): st.session_state.cart=[]; st.rerun()
         st.divider()
-
     cat=st.selectbox("Filtrar Categoria", ["Todas","Joias","Roupas","Íntimas","Sapatos","Bolsas","Beleza"])
     dff=df if cat=="Todas" else df[df['cat']==cat]
-
     st.caption(f"{len(dff)} produtos | Globo + Loja")
     for _,p in dff.iterrows():
         sel = st.session_state.sel==p['id']
@@ -48,12 +44,11 @@ with st.sidebar:
             with c1:
                 if st.button("📍 GLOBO", key=f"g{p['id']}"): st.session_state.sel=p['id']; st.rerun()
             with c2:
-                if st.button("🛒 ESCOLHER", key=f"a{p['id']}"): st.session_state.cart.append(p); st.session_state.sel=p['id']; st.toast("Adicionado!"); st.rerun()
+                if st.button("🛒 ESCOLHER", key=f"a{p['id']}"): st.session_state.cart.append(p.to_dict()); st.session_state.sel=p['id']; st.toast("Adicionado!"); st.rerun()
 
-# GLOBO PRINCIPAL
 c1,c2,c3,c4=st.columns(4)
 c1.metric("Vendas Hoje UK","£0,00","INICIANDO")
-c2.metric("Previsão 7d",f"£{dff['prev'].sum()*35:.0f}","IA")
+c2.metric("Previsão 7d",f"£{int(dff['prev'].sum()*35)}","IA")
 c3.metric("Produto Top",dff.sort_values('viral',ascending=False).iloc[0]['prod'][:15])
 c4.metric("Cidade Ouro","Londres","60% vendas")
 
@@ -65,10 +60,20 @@ else:
     st.info("👈 Clique em 📍 GLOBO ou 🛒 ESCOLHER na barra lateral pra integrar loja no globo cibernético")
     dg=dff
 
+# --- LINHA CORRIGIDA AQUI: r['city'] em vez de r.city ---
 colors={"Joias":"#FFD700","Roupas":"#FF00FF","Íntimas":"#FF1493","Sapatos":"#00FFFF","Bolsas":"#FFA500","Beleza":"#FF69B4"}
-pts=[{"lat":r.lat,"lng":r.lon,"prod":r.prod,"cat":r.cat,"price":r.price,"city":r.city,"size":2.2 if st.session_state.sel==r.id else r.viral/50,"color":"#FFF" if st.session_state.sel==r.id else colors[r.cat],"icon":r.icon} for _,r in dg.iterrows()]
+pts=[]
+for _, r in dg.iterrows():
+    pts.append({
+        "lat": float(r['lat']), "lng": float(r['lon']), "prod": r['prod'], "cat": r['cat'],
+        "price": float(r['price']), "city": r['city'],
+        "size": 2.2 if st.session_state.sel==r['id'] else float(r['viral'])/50,
+        "color": "#FFFFFF" if st.session_state.sel==r['id'] else colors.get(r['cat'],"#FF00FF"),
+        "icon": r['icon']
+    })
+
 j=json.dumps(pts)
-flat, flng = (float(dg.iloc[0].lat), float(dg.iloc[0].lon)) if len(dg)>0 else (51.5, -2.0)
+flat, flng = (float(dg.iloc[0]['lat']), float(dg.iloc[0]['lon'])) if len(dg)>0 else (51.5, -2.0)
 
 html=f"""
 <div id="g" style="width:100%;height:620px;background:#000;border-radius:20px;border:2px solid #FF00FF"></div>
@@ -81,19 +86,10 @@ w.controls().autoRotate=true; w.controls().autoRotateSpeed=0.7; w.pointOfView({{
 """
 components.html(html, height=640)
 
-# VITRINE CIBERNÉTICA
 st.divider()
 st.subheader("💎 VITRINE CIBERNÉTICA - LOJA INTEGRADA NO GLOBO")
 cols=st.columns(5)
 for i,(_,p) in enumerate(dff.iterrows()):
     with cols[i%5]:
         with st.container(border=True):
-            st.markdown(f"<center style='font-size:40px'>{p['icon']}</center>", unsafe_allow_html=True)
-            st.markdown(f"**{p['prod'][:20]}**")
-            st.caption(f"{p['cat']} | {p['viral']}% viral")
-            st.markdown(f"**£{p['price']}**")
-            st.progress(p['viral'], text=f"Previsão: {p['prev']} un/7d")
-            if st.button("ESCOLHER PRODUTO", key=f"v{p['id']}", use_container_width=True):
-                st.session_state.cart.append(p); st.session_state.sel=p['id']; st.rerun()
-
-st.balloons()
+            st.markdown(f"<center style='font-size:40px'>{p['icon
