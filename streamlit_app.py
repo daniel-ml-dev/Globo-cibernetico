@@ -1,151 +1,99 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
+mport streamlit as st, pandas as pd, json, numpy as np
+import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide", page_title="GLOBO PREDITIVO 7 DIAS")
-st.title("🌍 GLOBO CIBERNÉTICO - PREVISÃO 7 DIAS | COD + IAD")
+st.set_page_config(layout="wide", page_title="FASHIONWOMEN ULTIMATE")
+st.markdown("<style>.stButton>button{background:linear-gradient(90deg,#FF00FF,#00FFFF);color:white;font-weight:900;border-radius:12px;border:none;width:100%;height:45px} div[data-testid='stMetric']{background:#111;border:1px solid #FF00FF;border-radius:10px;padding:10px}</style>", unsafe_allow_html=True)
 
-# --- SIDEBAR ---
+if 'cart' not in st.session_state: st.session_state.cart=[]
+if 'sel' not in st.session_state: st.session_state.sel=None
+
+# CATALOGO ULTIMATE - TUDO QUE ENVOLVE MULHER - BEST SELLERS UK
+data = [
+    {"id":1,"cat":"Joias","prod":"Colar Dourado Minimalista","price":19.99,"icon":"💍","lat":51.5074,"lon":-0.1278,"city":"Londres","stock":200,"viral":98,"wix":"https://fashionwomen.com.br"},
+    {"id":2,"cat":"Joias","prod":"Brinco Argola Premium","price":12.99,"icon":"✨","lat":53.4808,"lon":-2.2426,"city":"Manchester","stock":300,"viral":95,"wix":"https://fashionwomen.com.br"},
+    {"id":3,"cat":"Roupas","prod":"Vestido Floral Zara Inspira","price":39.99,"icon":"👗","lat":51.5074,"lon":-0.1278,"city":"Londres","stock":45,"viral":99,"wix":"https://fashionwomen.com.br"},
+    {"id":4,"cat":"Roupas","prod":"Conjunto Cropped + Saia","price":45.99,"icon":"💃","lat":55.9533,"lon":-3.1883,"city":"Edinburgh","stock":25,"viral":97,"wix":"https://fashionwomen.com.br"},
+    {"id":5,"cat":"Íntimas","prod":"Kit 5 Calcinhas Algodão","price":24.99,"icon":"🩷","lat":51.5074,"lon":-0.1278,"city":"Londres","stock":500,"viral":100,"wix":"https://fashionwomen.com.br"},
+    {"id":6,"cat":"Íntimas","prod":"Sutiã Confort Sem Bojo","price":29.99,"icon":"👙","lat":53.8008,"lon":-1.5491,"city":"Leeds","stock":120,"viral":96,"wix":"https://fashionwomen.com.br"},
+    {"id":7,"cat":"Sapatos","prod":"Bota Tratorada Cano Alto","price":69.99,"icon":"👢","lat":52.4862,"lon":-1.8904,"city":"Birmingham","stock":30,"viral":94,"wix":"https://fashionwomen.com.br"},
+    {"id":8,"cat":"Sapatos","prod":"Tênis Chunky Branco","price":54.99,"icon":"👟","lat":53.4084,"lon":-2.9916,"city":"Liverpool","stock":60,"viral":93,"wix":"https://fashionwomen.com.br"},
+    {"id":9,"cat":"Bolsas","prod":"Bolsa Tote Grife Inspira","price":39.99,"icon":"👜","lat":51.4545,"lon":-2.5879,"city":"Bristol","stock":80,"viral":92,"wix":"https://fashionwomen.com.br"},
+    {"id":10,"cat":"Beleza","prod":"Kit Gloss + Brinco","price":18.99,"icon":"💄","lat":51.5074,"lon":-0.1278,"city":"Londres","stock":400,"viral":99,"wix":"https://fashionwomen.com.br"},
+]
+df=pd.DataFrame(data)
+df['prev']= (df['viral']*1.5 + np.random.randint(10,30,10)).astype(int)
+
+# SIDEBAR = LOJA
 with st.sidebar:
-    st.header("🧠 IA Preditiva")
-    up = st.file_uploader("Upload histórico (com coluna 'data')", type="csv")
-    modo = st.radio("Modo", ["Real (Histórico)", "🔮 Previsão 7 Dias"])
-    st.divider()
-    st.caption("COD = Cash on Delivery UK\nIAD = Detecção de viral")
+    st.title("🛒 LOJA GLOBO")
+    if st.session_state.cart:
+        total=sum(i['price'] for i in st.session_state.cart)
+        st.subheader(f"Carrinho: {len(st.session_state.cart)} itens")
+        for i in st.session_state.cart: st.write(f"{i['icon']} {i['prod']} £{i['price']}")
+        st.metric("TOTAL", f"£{total:.2f}")
+        st.link_button("💳 FINALIZAR NA WIX", "https://fashionwomen.com.br/cart", use_container_width=True)
+        if st.button("Limpar Carrinho"): st.session_state.cart=[]; st.rerun()
+        st.divider()
 
-# --- DADOS ---
-# Se não tem upload, cria histórico 30 dias fake pra demonstração
-def gera_historico():
-    np.random.seed(42)
-    base = [
-        ('Penha','SC','BR',-26.776,-48.6525,'PS5',12),
-        ('Londres','England','UK',51.5074,-0.1278,'PS5',53),
-        ('Manchester','England','UK',53.4808,-2.2426,'iPhone 15',21),
-        ('Birmingham','England','UK',52.4862,-1.8904,'PS5',35),
-        ('Edinburgh','Scotland','UK',55.9533,-3.1883,'iPhone 15',18),
-        ('Liverpool','England','UK',53.4084,-2.9916,'Xbox Series',27),
-    ]
-    rows=[]
-    for i in range(30):
-        d = datetime.now() - timedelta(days=30-i)
-        wf = 1.4 if d.weekday()>=5 else 1.0
-        tf = 1 + i/30*0.3
-        for cid, reg, pais, lat, lon, prod, b in base:
-            cod = 1.2 if pais=='UK' else 1.0
-            v = max(1, int(np.random.normal(b*wf*tf*cod, b*0.2)))
-            rows.append([d.strftime('%Y-%m-%d'), cid, reg, pais, lat, lon, prod, v])
-    return pd.DataFrame(rows, columns=['data','cidade','regiao','pais','lat','lon','produto','vendas'])
+    cat=st.selectbox("Filtrar Categoria", ["Todas","Joias","Roupas","Íntimas","Sapatos","Bolsas","Beleza"])
+    dff=df if cat=="Todas" else df[df['cat']==cat]
 
-if up:
-    df_hist = pd.read_csv(up)
-    # tenta achar coluna data
-    if 'data' not in df_hist.columns:
-        df_hist['data'] = (datetime.now() - timedelta(days=len(df_hist))).strftime('%Y-%m-%d')
+    st.caption(f"{len(dff)} produtos | Globo + Loja")
+    for _,p in dff.iterrows():
+        sel = st.session_state.sel==p['id']
+        with st.container(border=True):
+            st.markdown(f"**{p['icon']} {p['prod']}** {'⭐' if sel else ''}")
+            st.write(f"£{p['price']} | {p['city']} | 🔥{p['viral']}% VIRAL")
+            c1,c2=st.columns(2)
+            with c1:
+                if st.button("📍 GLOBO", key=f"g{p['id']}"): st.session_state.sel=p['id']; st.rerun()
+            with c2:
+                if st.button("🛒 ESCOLHER", key=f"a{p['id']}"): st.session_state.cart.append(p); st.session_state.sel=p['id']; st.toast("Adicionado!"); st.rerun()
+
+# GLOBO PRINCIPAL
+c1,c2,c3,c4=st.columns(4)
+c1.metric("Vendas Hoje UK","£0,00","INICIANDO")
+c2.metric("Previsão 7d",f"£{dff['prev'].sum()*35:.0f}","IA")
+c3.metric("Produto Top",dff.sort_values('viral',ascending=False).iloc[0]['prod'][:15])
+c4.metric("Cidade Ouro","Londres","60% vendas")
+
+if st.session_state.sel:
+    prod=df[df['id']==st.session_state.sel].iloc[0]
+    st.success(f"🎯 SELECIONADO: {prod['icon']} {prod['prod']} - £{prod['price']} | Previsão {prod['prev']} vendas/7d em {prod['city']}")
+    dg=df[df['id']==st.session_state.sel]
 else:
-    df_hist = gera_historico()
-    st.sidebar.info(f"Usando histórico simulado 30 dias ({len(df_hist)} linhas)")
+    st.info("👈 Clique em 📍 GLOBO ou 🛒 ESCOLHER na barra lateral pra integrar loja no globo cibernético")
+    dg=dff
 
-# --- FUNÇÃO PREVISÃO IAD + COD ---
-def prever_7dias(df):
-    forecasts=[]
-    for (cidade, produto), g in df.groupby(['cidade','produto']):
-        g = g.sort_values('data')
-        y = g['vendas'].astype(float).values
-        x = np.arange(len(y))
-        # Regressão linear pura numpy (sem sklearn)
-        A = np.vstack([x, np.ones(len(x))]).T
-        a,b = np.linalg.lstsq(A, y, rcond=None)[0]
-        last_mean = y[-7:].mean()
-        # IAD: desvio padrão pra detectar anomalia viral
-        std = y.std()
-        lat, lon = g.iloc[0]['lat'], g.iloc[0]['lon']
-        reg, pais = g.iloc[0]['regiao'], g.iloc[0]['pais']
-        for j in range(7):
-            fd = datetime.now() + timedelta(days=j+1)
-            pred = int(a*(len(y)+j) + b)
-            # COD boost UK
-            if pais=='UK':
-                pred = int(pred * 1.15)
-            pred = max(1, pred)
-            var = (pred-last_mean)/last_mean*100 if last_mean else 0
-            tendencia = 'ALTA EXPLOSIVA 🚀' if var>20 else 'QUEDA 📉' if var<-15 else 'ESTAVEL ➡️'
-            # IAD alerta viral
-            iad_alerta = 'VIRAL DETECTADO' if abs(pred-last_mean) > 2*std else 'Normal'
-            forecasts.append([fd.strftime('%Y-%m-%d'), cidade, reg, pais, lat, lon, produto, pred, round(var,1), tendencia, iad_alerta])
-    return pd.DataFrame(forecasts, columns=['data_prevista','cidade','regiao','pais','lat','lon','produto','vendas_previstas','variacao_%','tendencia','IAD'])
+colors={"Joias":"#FFD700","Roupas":"#FF00FF","Íntimas":"#FF1493","Sapatos":"#00FFFF","Bolsas":"#FFA500","Beleza":"#FF69B4"}
+pts=[{"lat":r.lat,"lng":r.lon,"prod":r.prod,"cat":r.cat,"price":r.price,"city":r.city,"size":2.2 if st.session_state.sel==r.id else r.viral/50,"color":"#FFF" if st.session_state.sel==r.id else colors[r.cat],"icon":r.icon} for _,r in dg.iterrows()]
+j=json.dumps(pts)
+flat, flng = (float(dg.iloc[0].lat), float(dg.iloc[0].lon)) if len(dg)>0 else (51.5, -2.0)
 
-df_prev = prever_7dias(df_hist)
+html=f"""
+<div id="g" style="width:100%;height:620px;background:#000;border-radius:20px;border:2px solid #FF00FF"></div>
+<script src="//unpkg.com/globe.gl"></script>
+<script>
+const d={j};
+const w=Globe()(document.getElementById('g')).globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png').backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png').pointsData(d).pointLat('lat').pointLng('lng').pointAltitude(p=>p.size*0.12).pointRadius(p=>p.size*0.2).pointColor('color').pointLabel(p=>`<b>${{p.icon}} ${{p.prod}}</b><br>${{p.cat}} £${{p.price}}<br>${{p.city}} UK`).atmosphereColor('#FF00FF').atmosphereAltitude(0.25);
+w.controls().autoRotate=true; w.controls().autoRotateSpeed=0.7; w.pointOfView({{lat:{flat},lng:{flng},altitude:0.7}},1200);
+</script>
+"""
+components.html(html, height=640)
 
-# --- ESCOLHE QUAL DF MOSTRAR ---
-df_show = df_prev if "Previsão" in modo else df_hist.tail(20)
+# VITRINE CIBERNÉTICA
+st.divider()
+st.subheader("💎 VITRINE CIBERNÉTICA - LOJA INTEGRADA NO GLOBO")
+cols=st.columns(5)
+for i,(_,p) in enumerate(dff.iterrows()):
+    with cols[i%5]:
+        with st.container(border=True):
+            st.markdown(f"<center style='font-size:40px'>{p['icon']}</center>", unsafe_allow_html=True)
+            st.markdown(f"**{p['prod'][:20]}**")
+            st.caption(f"{p['cat']} | {p['viral']}% viral")
+            st.markdown(f"**£{p['price']}**")
+            st.progress(p['viral'], text=f"Previsão: {p['prev']} un/7d")
+            if st.button("ESCOLHER PRODUTO", key=f"v{p['id']}", use_container_width=True):
+                st.session_state.cart.append(p); st.session_state.sel=p['id']; st.rerun()
 
-# --- GLOBO ---
-fig = go.Figure()
-for _, r in df_show.iterrows():
-    lat_col = r['lat']; lon_col = r['lon']
-    is_prev = 'vendas_previstas' in r
-    vendas = r['vendas_previstas'] if is_prev else r['vendas']
-    # cor por tendencia
-    if is_prev:
-        if 'ALTA' in r['tendencia']:
-            color = '#00FF00'
-            size = 20
-        elif 'QUEDA' in r['tendencia']:
-            color = '#FF0000'
-            size = 10
-        else:
-            color = '#FFFF00'
-            size = 14
-        hover = f"<b>{r['cidade']} - PREVISAO</b><br>{r['produto']}<br>{r['data_prevista']}<br>Prev: {vendas} vendas<br>Var: {r['variacao_%']}%<br>{r['tendencia']}<br>IAD: {r['IAD']}"
-    else:
-        color = '#00FFFF' if r['pais']=='UK' else '#FF00FF'
-        size = max(8, vendas*0.3)
-        hover = f"<b>{r['cidade']}</b><br>{r['produto']}<br>Vendas: {vendas}<br>Data: {r['data']}"
-
-    fig.add_trace(go.Scattergeo(
-        lat=[lat_col], lon=[lon_col],
-        text=hover, hoverinfo='text',
-        mode='markers',
-        marker=dict(size=size, color=color, line=dict(width=1,color='white')),
-        showlegend=False
-    ))
-
-# linhas Penha->UK
-if 'Penha' in df_show['cidade'].values:
-    penha = df_show[df_show['cidade']=='Penha'].iloc[0]
-    for _, u in df_show[df_show['pais']=='UK'].iterrows():
-        fig.add_trace(go.Scattergeo(
-            lat=[penha['lat'], u['lat']], lon=[penha['lon'], u['lon']],
-            mode='lines', line=dict(width=1, color='rgba(0,255,255,0.3)'),
-            hoverinfo='skip', showlegend=False
-        ))
-
-fig.update_layout(
-    height=650, margin={"r":0,"t":0,"l":0,"b":0},
-    paper_bgcolor='black',
-    geo=dict(
-        projection_type='orthographic',
-        showland=True, landcolor='rgb(20,20,20)',
-        showocean=True, oceancolor='rgb(5,10,20)',
-        showcountries=True, countrycolor='rgb(60,60,60)',
-        projection=dict(rotation=dict(lon=-30, lat=15))
-    )
-)
-st.plotly_chart(fig, use_container_width=True)
-
-# --- TABELAS E GRAFICOS ---
-c1,c2 = st.columns(2)
-with c1:
-    st.subheader("🔮 Previsão 7 Dias - Detalhe por Cidade")
-    st.dataframe(df_prev.sort_values('variacao_%', ascending=False), use_container_width=True)
-    st.download_button("📥 Baixar previsão 7 dias", df_prev.to_csv(index=False), "previsao_7dias_COD_IAD.csv")
-with c2:
-    st.subheader("📈 Tendência")
-    # agrupa por dia
-    daily = df_prev.groupby('data_prevista')['vendas_previstas'].sum()
-    st.line_chart(daily)
-    st.warning("💡 INSIGHT IAD: Londres PS5 com ALTA EXPLOSIVA - reponha estoque COD UK em 48h!")
-
-st.success("Modo COD ativado: +15% conversão UK | IAD ativado: detecção viral TikTok")
+st.balloons()
