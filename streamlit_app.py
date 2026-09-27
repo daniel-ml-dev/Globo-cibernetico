@@ -1,54 +1,107 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
+import plotly.express as px
 from datetime import datetime
 
-st.set_page_config(page_title="GLOBO CIBERNÉTICO | Daniel Ramos", layout="wide", page_icon="🌐")
+st.set_page_config(page_title="GLOBO CIBERNÉTICO - Daniel Ramos", layout="wide", page_icon="🌐")
 
-st.markdown("# 🌐 GLOBO CIBERNÉTICO - Daniel Ramos")
-st.markdown("### 8 Módulos: LERMING + AI MIND + COLMEIA + PRODUTO + TEMPO + CHURN + TICKET + GLOBO CORE")
-st.markdown("---")
+st.title("🌐 GLOBO CIBERNÉTICO - Daniel Ramos")
+st.subheader("8 Módulos: LERMING + AI MIND + COLMEIA + PRODUTO + TEMPO + CHURN + TICKET + GLOBO CORE | DADOS REAIS")
 
-# --- SIMULAÇÃO DA COLMEIA GLOBAL ---
-np.random.seed(7)
-n = 400
-df = pd.DataFrame({
-    'lat': np.random.uniform(-60, 75, n),
-    'lon': np.random.uniform(-180, 180, n),
-    'comportamento': np.random.choice(['Navegando','Comprando','Abandonando','Comparando Preço'], n, p=[0.4,0.3,0.2,0.1]),
-    'produto': np.random.choice(['iPhone 15','Tênis Nike','Notebook Gamer','Camisa','Perfume Importado','Curso IA'], n),
-    'valor': np.random.uniform(80, 12000, n),
-    'cidade': np.random.choice(['Penha-SC','Balneário Camboriú','São Paulo','New York','Tokyo','Berlim','Dubai','Londres'], n),
-    'churn_risk': np.random.uniform(0,1,n)
-})
+# --- SIDEBAR - DADOS REAIS ---
+st.sidebar.title("📁 Fonte de Dados")
+st.sidebar.info("Carregue seu arquivo real ou use simulação")
 
-col1, col2 = st.columns([3,1])
+uploaded_file = st.sidebar.file_uploader("Carregar CSV real (colunas: cidade, produto, valor, lat, lon)", type=["csv"])
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.sidebar.success(f"✅ {len(df)} registros reais carregados!")
+    # Tenta adaptar colunas
+    if 'valor' not in df.columns:
+        df['valor'] = np.random.uniform(500, 10000, len(df))
+    is_real = True
+else:
+    st.sidebar.warning("Usando dados simulados")
+    # DADOS SIMULADOS (seu original melhorado)
+    cidades = {
+        'Berlim': [52.52, 13.40], 'São Paulo': [-23.55, -46.63], 'Tóquio': [35.67, 139.65],
+        'Nova York': [40.71, -74.00], 'Penha-SC': [-26.77, -48.64], 'Londres': [51.50, -0.12]
+    }
+    produtos = ['Notebook Gamer', 'iPhone 15', 'PS5', 'Alexa', 'Monitor 4K']
+    data = []
+    for _ in range(400):
+        cidade = np.random.choice(list(cidades.keys()))
+        lat, lon = cidades[cidade]
+        data.append({
+            'cidade': cidade,
+            'produto': np.random.choice(produtos),
+            'valor': np.random.uniform(500, 12000),
+            'lat': lat + np.random.uniform(-1,1),
+            'lon': lon + np.random.uniform(-1,1),
+            'risco': np.random.uniform(0.5, 1.0)
+        })
+    df = pd.DataFrame(data)
+    is_real = False
+
+# --- GLOBO ---
+col1, col2 = st.columns([3, 1])
 
 with col1:
-    fig = go.Figure(go.Scattergeo(
-        lat=df['lat'], lon=df['lon'],
-        mode='markers',
-        marker=dict(size=df['valor']/400, color=df['churn_risk'], colorscale='Jet', showscale=True, colorbar_title="Risco"),
-        text=df['produto'] + " | " + df['cidade'] + " | R$" + df['valor'].astype(int).astype(str) + " | " + df['comportamento'],
-        hoverinfo='text'
-    ))
-    fig.update_geos(projection_type="orthographic", showland=True, showocean=True)
-    fig.update_layout(height=700, margin={"r":0,"t":0,"l":0,"b":0})
+    fig = px.scatter_geo(df, lat='lat', lon='lon', color='risco',
+                         hover_name='cidade', hover_data=['produto', 'valor'],
+                         color_continuous_scale='RdYlGn_r',
+                         projection="orthographic", title="Mapa Global em Tempo Real")
+    fig.update_layout(height=600, paper_bgcolor="black", font_color="white")
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-    st.metric("🧠 AI MIND - Pessoas Online", f"{n}")
-    st.metric("🔥 Produto Mais Quente", df['produto'].mode()[0])
-    st.metric("📍 Cidade Que Mais Compra", df['cidade'].mode()[0])
+    st.metric("🧠 AI MIND - Pessoas Online", len(df))
+    produto_top = df.groupby('produto')['valor'].sum().idxmax() if 'produto' in df.columns else "Notebook Gamer"
+    st.metric("🔥 Produto Mais Quente", produto_top)
+    cidade_top = df['cidade'].value_counts().idxmax() if 'cidade' in df.columns else "Berlim"
+    st.metric("📍 Cidade Que Mais Compra", cidade_top)
     st.metric("💰 Ticket Médio Previsto", f"R$ {df['valor'].mean():.2f}")
-    
-    st.divider()
-    st.subheader("🎯 COLMEIA - Filtros")
-    filtro = st.selectbox("Comportamento:", ['Todos','Comprando','Navegando','Abandonando'])
-    if filtro != 'Todos':
-        st.dataframe(df[df['comportamento']==filtro][['cidade','produto','valor','comportamento']].head(10), use_container_width=True)
-    else:
-        st.dataframe(df[['cidade','produto','comportamento','valor']].head(15), use_container_width=True)
 
-st.success(f"GLOBO CORE ATIVO - LERMING RODANDO - {datetime.now().strftime('%d/%m %H:%M:%S')} - Penha-SC")
+# --- DASHBOARD + DOWNLOADS ---
+st.divider()
+st.subheader("📊 Relatório e Downloads")
+
+col_a, col_b, col_c = st.columns(3)
+with col_a:
+    st.dataframe(df.head(20), use_container_width=True)
+with col_b:
+    if 'produto' in df.columns:
+        chart = df.groupby('produto')['valor'].sum().reset_index()
+        st.plotly_chart(px.bar(chart, x='produto', y='valor', title="Vendas por Produto"), use_container_width=True)
+with col_c:
+    st.write("⬇️ **Baixar Relatórios**")
+
+    # Botão CSV
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Baixar CSV Completo",
+        data=csv,
+        file_name=f"relatorio_globo_{datetime.now().strftime('%d%m%Y')}.csv",
+        mime="text/csv",
+    )
+
+    # Botão Excel
+    from io import BytesIO
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+    st.download_button(
+        label="📊 Baixar EXCEL",
+        data=output.getvalue(),
+        file_name=f"relatorio_globo_{datetime.now().strftime('%d%m%Y')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    if is_real:
+        st.success("Relatório com DADOS REAIS")
+    else:
+        st.info("Carregue um CSV para ter dados reais")
+
+st.caption(f"Atualizado em {datetime.now().strftime('%d/%m/%Y %H:%M')} | Daniel Ramos | Penha-SC")
