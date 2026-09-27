@@ -1,4 +1,4 @@
-mport streamlit as st, json
+import streamlit as st, json
 
 st.set_page_config(layout="wide", page_title="FASHIONWOMEN FIX")
 st.markdown("<style>.stButton>button{background:linear-gradient(90deg,#FF00FF,#00FFFF);color:white;font-weight:900;border-radius:12px;border:none;width:100%}</style>", unsafe_allow_html=True)
