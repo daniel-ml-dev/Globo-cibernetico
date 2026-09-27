@@ -1,107 +1,119 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
-from datetime import datetime
+import plotly.graph_objects as go
 
-st.set_page_config(page_title="GLOBO CIBERNÉTICO - Daniel Ramos", layout="wide", page_icon="🌐")
+st.set_page_config(layout="wide", page_title="Globo Cibernético REAL")
+st.title("🌍 GLOBO CIBERNÉTICO - REALISTA 3D")
+st.caption("Arraste para girar | Scroll para zoom | Passe o mouse nos pontos")
 
-st.title("🌐 GLOBO CIBERNÉTICO - Daniel Ramos")
-st.subheader("8 Módulos: LERMING + AI MIND + COLMEIA + PRODUTO + TEMPO + CHURN + TICKET + GLOBO CORE | DADOS REAIS")
+# --- Dados base com coordenadas REAIS ---
+dados_base = {
+    'cidade': ['Penha', 'Londres', 'Manchester', 'Birmingham', 'Edinburgh', 'Liverpool', 'Londrina', 'São Paulo'],
+    'regiao': ['Santa Catarina', 'England', 'England', 'England', 'Scotland', 'England', 'Paraná', 'São Paulo'],
+    'pais': ['BR', 'UK', 'UK', 'UK', 'UK', 'UK', 'BR', 'BR'],
+    'lat': [-26.7760, 51.5074, 53.4808, 52.4862, 55.9533, 53.4084, -23.3044, -23.5505],
+    'lon': [-48.6525, -0.1278, -2.2426, -1.8904, -3.1883, -2.9916, -51.1696, -46.6333],
+    'produto': ['PS5', 'PS5', 'iPhone 15', 'PS5', 'iPhone 15', 'Xbox', 'PS5', 'iPhone 15'],
+    'vendas': [12, 53, 21, 35, 18, 27, 8, 42],
+    'valor': [4299, 429.99, 899.99, 429.99, 899.99, 449.99, 4299, 7999],
+    'risco': [1, 2, 1, 3, 1, 2, 1, 1]
+}
 
-# --- SIDEBAR - DADOS REAIS ---
-st.sidebar.title("📁 Fonte de Dados")
-st.sidebar.info("Carregue seu arquivo real ou use simulação")
+@st.cache_data
+def load_data(uploaded):
+    if uploaded:
+        df = pd.read_csv(uploaded)
+        # garante colunas
+        return df
+    return pd.DataFrame(dados_base)
 
-uploaded_file = st.sidebar.file_uploader("Carregar CSV real (colunas: cidade, produto, valor, lat, lon)", type=["csv"])
-
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    st.sidebar.success(f"✅ {len(df)} registros reais carregados!")
-    # Tenta adaptar colunas
-    if 'valor' not in df.columns:
-        df['valor'] = np.random.uniform(500, 10000, len(df))
-    is_real = True
-else:
-    st.sidebar.warning("Usando dados simulados")
-    # DADOS SIMULADOS (seu original melhorado)
-    cidades = {
-        'Berlim': [52.52, 13.40], 'São Paulo': [-23.55, -46.63], 'Tóquio': [35.67, 139.65],
-        'Nova York': [40.71, -74.00], 'Penha-SC': [-26.77, -48.64], 'Londres': [51.50, -0.12]
-    }
-    produtos = ['Notebook Gamer', 'iPhone 15', 'PS5', 'Alexa', 'Monitor 4K']
-    data = []
-    for _ in range(400):
-        cidade = np.random.choice(list(cidades.keys()))
-        lat, lon = cidades[cidade]
-        data.append({
-            'cidade': cidade,
-            'produto': np.random.choice(produtos),
-            'valor': np.random.uniform(500, 12000),
-            'lat': lat + np.random.uniform(-1,1),
-            'lon': lon + np.random.uniform(-1,1),
-            'risco': np.random.uniform(0.5, 1.0)
-        })
-    df = pd.DataFrame(data)
-    is_real = False
-
-# --- GLOBO ---
-col1, col2 = st.columns([3, 1])
-
-with col1:
-    fig = px.scatter_geo(df, lat='lat', lon='lon', color='risco',
-                         hover_name='cidade', hover_data=['produto', 'valor'],
-                         color_continuous_scale='RdYlGn_r',
-                         projection="orthographic", title="Mapa Global em Tempo Real")
-    fig.update_layout(height=600, paper_bgcolor="black", font_color="white")
-    st.plotly_chart(fig, use_container_width=True)
-
-with col2:
-    st.metric("🧠 AI MIND - Pessoas Online", len(df))
-    produto_top = df.groupby('produto')['valor'].sum().idxmax() if 'produto' in df.columns else "Notebook Gamer"
-    st.metric("🔥 Produto Mais Quente", produto_top)
-    cidade_top = df['cidade'].value_counts().idxmax() if 'cidade' in df.columns else "Berlim"
-    st.metric("📍 Cidade Que Mais Compra", cidade_top)
-    st.metric("💰 Ticket Médio Previsto", f"R$ {df['valor'].mean():.2f}")
-
-# --- DASHBOARD + DOWNLOADS ---
-st.divider()
-st.subheader("📊 Relatório e Downloads")
-
-col_a, col_b, col_c = st.columns(3)
-with col_a:
-    st.dataframe(df.head(20), use_container_width=True)
-with col_b:
-    if 'produto' in df.columns:
-        chart = df.groupby('produto')['valor'].sum().reset_index()
-        st.plotly_chart(px.bar(chart, x='produto', y='valor', title="Vendas por Produto"), use_container_width=True)
-with col_c:
-    st.write("⬇️ **Baixar Relatórios**")
-
-    # Botão CSV
-    csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Baixar CSV Completo",
-        data=csv,
-        file_name=f"relatorio_globo_{datetime.now().strftime('%d%m%Y')}.csv",
-        mime="text/csv",
-    )
-
-    # Botão Excel
-    from io import BytesIO
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False)
-    st.download_button(
-        label="📊 Baixar EXCEL",
-        data=output.getvalue(),
-        file_name=f"relatorio_globo_{datetime.now().strftime('%d%m%Y')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-    if is_real:
-        st.success("Relatório com DADOS REAIS")
+with st.sidebar:
+    st.header("Fonte de Dados")
+    up = st.file_uploader("Upload seu CSV (com lat,lon)", type="csv")
+    df = load_data(up)
+    if up:
+        st.success(f"{len(df)} registros reais carregados!")
     else:
-        st.info("Carregue um CSV para ter dados reais")
+        st.info("Usando dados de exemplo REALISTAS")
 
-st.caption(f"Atualizado em {datetime.now().strftime('%d/%m/%Y %H:%M')} | Daniel Ramos | Penha-SC")
+    produto_filtro = st.multiselect("Filtrar Produto", df['produto'].unique(), default=df['produto'].unique())
+
+df_f = df[df['produto'].isin(produto_filtro)]
+
+# --- GLOBO REALISTA ---
+fig = go.Figure()
+
+# 1. Globo base (oceano + terra)
+fig.add_trace(go.Scattergeo(
+    lat=[0], lon=[0], mode='markers', marker=dict(size=1, color='rgba(0,0,0,0)'), showlegend=False
+))
+
+# 2. Pontos de venda
+for _, row in df_f.iterrows():
+    color = '#00FFFF' if row['pais']=='UK' else '#FF00FF' if row['cidade']=='Penha' else '#00FF88'
+    size = max(8, row['vendas'] * 0.8)
+
+    fig.add_trace(go.Scattergeo(
+        lat=[row['lat']],
+        lon=[row['lon']],
+        text=f"<b>{row['cidade']}</b><br>{row['regiao']}, {row['pais']}<br>📦 {row['produto']}<br>📈 {row['vendas']} vendas<br>💰 R$ {row['valor']}<br>Lat: {row['lat']}, Lon: {row['lon']}",
+        hoverinfo='text',
+        mode='markers',
+        marker=dict(
+            size=size,
+            color=color,
+            line=dict(width=1, color='white'),
+            sizemode='diameter'
+        ),
+        name=f"{row['cidade']} - {row['produto']}"
+    ))
+
+# 3. Linhas Penha -> UK (conexão cibernética)
+penha = df_f[df_f['cidade']=='Penha']
+uk = df_f[df_f['pais']=='UK']
+if not penha.empty:
+    for _, u in uk.iterrows():
+        fig.add_trace(go.Scattergeo(
+            lat=[penha.iloc[0]['lat'], u['lat']],
+            lon=[penha.iloc[0]['lon'], u['lon']],
+            mode='lines',
+            line=dict(width=1, color='rgba(0,255,255,0.4)'),
+            hoverinfo='skip',
+            showlegend=False
+        ))
+
+fig.update_layout(
+    height=700,
+    margin={"r":0,"t":0,"l":0,"b":0},
+    paper_bgcolor='black',
+    geo=dict(
+        projection_type='orthographic',
+        showland=True,
+        landcolor='rgb(20,20,20)',
+        showocean=True,
+        oceancolor='rgb(5,10,20)',
+        showcountries=True,
+        countrycolor='rgb(60,60,60)',
+        showcoastlines=True,
+        coastlinecolor='rgb(80,80,80)',
+        showlakes=False,
+        bgcolor='rgba(0,0,0,0)',
+        projection=dict(
+            rotation=dict(lon=-30, lat=15)
+        )
+    ),
+    legend=dict(font=dict(color='white'))
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+# Relatorio
+st.divider()
+col1, col2 = st.columns(2)
+with col1:
+    st.subheader("Relatório e Downloads")
+    st.dataframe(df_f[['cidade','regiao','pais','produto','vendas','valor','lat','lon']], use_container_width=True)
+    st.download_button("📥 Baixar relatório", df_f.to_csv(index=False), "relatorio_globo_realista.csv")
+with col2:
+    st.subheader("Vendas por Produto")
+    st.bar_chart(df_f.groupby('produto')['vendas'].sum())
