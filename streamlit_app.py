@@ -1,4 +1,4 @@
-mport streamlit as st, pandas as pd, json, numpy as np
+import streamlit as st, pandas as pd, json, numpy as np
 import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide", page_title="FASHIONWOMEN ULTIMATE")
