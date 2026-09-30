@@ -572,8 +572,9 @@ elif menu == "🛰️ Espaço & NASA":
                 """, unsafe_allow_html=True)
         except: st.info("Dados indisponíveis no momento")
     else:
-        st.info("Conectando à NASA...")
-    st.markdown("</div>", unsafe_allow_html=True)
+        else:
+    st.warning("🌑 Modo offline - NASA sem sinal (DEMO_KEY atingiu limite)")
+    st.markdown("<div style='display:flex; justify-content:space-between; padding:5px;'><span>2021 GT (offline)</span><span>1.200.000 km</span><span>50 m</span><span>✅ Não</span></div>", unsafe_allow_html=True)
 
     # 🌌 IMAGEM DO DIA
     st.markdown("</div>", unsafe_allow_html=True)
