@@ -55,9 +55,22 @@ def get_weather(city):
 # ☁️ NASA APOD
 def get_apod():
     try:
-        r = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}", timeout=10)
-        return r.json() if r.status_code == 200 else None
-    except: return None
+        r = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}", timeout=5)
+        return r.json() if r.status_code == 200 else {"url": "https://apod.nasa.gov/apod/image/2408/M31_Hubble_960.jpg", "title": "Modo offline"}
+    except:
+        return {"url": "https://apod.nasa.gov/apod/image/2408/M31_Hubble_960.jpg", "title": "Andrômeda (offline)", "explanation": "Sem sinal"}
+
+# ASTEROIDES
+def get_neo():
+    try:
+        today = datetime.now().strftime("%Y-%m-%d")
+        r = requests.get(f"https://api.nasa.gov/neo/rest/v1/feed?start_date={today}&end_date={today}&api_key={NASA_KEY}", timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            return list(data['near_earth_objects'].values())[0][:3]
+        return [{"name": "Offline", "close_approach_data": [{"miss_distance": {"kilometers": "1200000"}}]}]
+    except:
+        return [{"name": "Asteroide Modo Offline", "close_approach_data": [{"miss_distance": {"kilometers": "1200000"}}]}]
 
 # ☄️ ASTEROIDES
 def get_neo():
