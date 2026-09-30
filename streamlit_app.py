@@ -655,6 +655,5 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ATUALIZAÇÃO AUTOMÁTICA
-time.sleep(45)
-st.rerun()
+# ATUALIZAÇÃO AUTOMÁTICA - FIX NÃO APAGA
+pass
