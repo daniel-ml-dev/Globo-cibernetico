@@ -63,9 +63,14 @@ def get_apod():
 def get_neo():
     try:
         today = datetime.utcnow().strftime("%Y-%m-%d")
-        r = requests.get(f"https://api.nasa.gov/neo/rest/v1/feed?start_date={today}&end_date={today}&api_key={NASA_KEY}", timeout=10)
-        return r.json() if r.status_code == 200 else None
-    except: return None
+        r = requests.get(f"https://api.nasa.gov/neo/rest/v1/feed?start_date={today}&end_date={today}&api_key={NASA_KEY}", timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            return list(data['near_earth_objects'].values())[0][:3]
+        else:
+            raise Exception("offline")
+    except:
+        return [{"name": "Asteroide Modo Offline (sem sinal)", "close_approach_data": [{"miss_distance": {"kilometers": "1200000"}}]}]
 
 # 🔥 FOCOS DE INCÊNDIO (dados simulados com base em regiões reais)
 def get_fires():
