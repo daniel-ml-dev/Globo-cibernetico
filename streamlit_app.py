@@ -5,7 +5,8 @@ import json
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
-
+NASA_API_KEY = "DEMO_KEY"       # → Crie em api.nasa.gov — é grátis!
+OPENWEATHER_KEY = ""             # → Crie em openweathermap.org — grátis!
 # ──────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
 # ──────────────────────────────────────────────
