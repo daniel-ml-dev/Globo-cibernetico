@@ -272,7 +272,11 @@ if layers:
     r = pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
-        map_style="mapbox://styles/mapbox/satellite-streets-v12",
+        map_style="https://basemaps.cartocdn.com/g1/darck-matter-g1-style/style.json",
+Daniel ramos Júnior Júnior
+10:45 PM (0 minutes ago)
+to me
+
         tooltip={
             "html": "<b>Local:</b> {place}<br/><b>Mag:</b> {mag}",
             "style": {"color": "white"}
