@@ -3,7 +3,7 @@ import streamlit as st
 import pydeck as pdk
 import requests
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import pandas as pd
 import numpy as np
 
@@ -16,7 +16,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
+target = datetime (2026,10,10,13,0,0, tzinfo=timezone.utc)
+diff = target - datetime.now(timezone.utc)
+st.metric("Proximo: Starlink 15-25", f"{diff.days}d {diff.seconds//3600}h")
 # ──────────────────────────────────────────────
 # ESTILO FUTURISTA
 # ──────────────────────────────────────────────
