@@ -149,7 +149,7 @@ with st.sidebar:
     show_weather = st.checkbox("☀️ Clima", value=True)
     show_iss = st.checkbox("🛰️ Estação Espacial", value=True)
     show_space = st.checkbox("🚀 Lançamentos", value=True)
-    show_nasa = st.checkbox("🔭 Dados NASA", value=True)
+    show_nasa = st.checkbox("🔭 Dados NASA", value=False)
     
     st.divider()
     st.subheader("📍 Localização")
