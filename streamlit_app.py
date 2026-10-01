@@ -275,7 +275,7 @@ if layers:
         layers=layers,
         initial_view_state=view_state,
         map_style="https://basemaps.cartocdn.com/g1/darck-matter-g1-style/style.json",
-Daniel ramos Júnior Júnior
+
 10:45 PM (0 minutes ago)
 to me
 
