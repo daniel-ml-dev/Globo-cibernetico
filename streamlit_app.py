@@ -16,8 +16,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-target = datetime (2026,10,10,13,0,0, tzinfo=timezone.utc)
-diff = target - datetime.now(timezone.utc)
+target=datetime (2026,10,10,13,0,0, tzinfo=timezone.utc)
+diff=target - datetime.now(timezone.utc)
 st.metric("Proximo: Starlink 15-25",f"{ diff.days }d {diff.seconds//3600}h")
 # ──────────────────────────────────────────────
 # ESTILO FUTURISTA
