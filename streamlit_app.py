@@ -272,7 +272,7 @@ if layers:
     r = pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
-        map_style="mapbox://styles/mapbox/dark-v10",
+        map_style="mapbox://styles/mapbox/satellite-streets-v12"
         tooltip={
             "html": "<b>Local:</b> {place}<br/><b>Mag:</b> {mag}",
             "style": {"color": "white"}
