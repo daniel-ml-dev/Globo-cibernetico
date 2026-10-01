@@ -1,24 +1,21 @@
-
 import streamlit as st
 import pydeck as pdk
 import requests
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 
 # ──────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
-# ───────────────────────────────────────────F───
+# ──────────────────────────────────────────────
 st.set_page_config(
     page_title="🌐 Cyber Globe | Sistema Global",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-target=datetime (2026,10,10,13,0,0,tzinfo=timezone.utc)
-diff=target - datetime.now(timezone.utc)
-st.metric("Proximo: Starlink 15-25",f"{ diff.days }d {diff.seconds//3600}h")
+
 # ──────────────────────────────────────────────
 # ESTILO FUTURISTA
 # ──────────────────────────────────────────────
@@ -151,7 +148,7 @@ with st.sidebar:
     show_weather = st.checkbox("☀️ Clima", value=True)
     show_iss = st.checkbox("🛰️ Estação Espacial", value=True)
     show_space = st.checkbox("🚀 Lançamentos", value=True)
-    show_nasa = st.checkbox("🔭 Dados NASA", value=False)
+    show_nasa = st.checkbox("🔭 Dados NASA", value=True)
     
     st.divider()
     st.subheader("📍 Localização")
@@ -274,8 +271,7 @@ if layers:
     r = pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
-        map_style="https://basemaps.cartocdn.com/g1/darck-matter-g1-style/style.json",
-
+        map_style="mapbox://styles/mapbox/dark-v10",
         tooltip={
             "html": "<b>Local:</b> {place}<br/><b>Mag:</b> {mag}",
             "style": {"color": "white"}
@@ -290,7 +286,7 @@ st.divider()
 # ──────────────────────────────────────────────
 # ABA: DADOS DETALHADOS
 # ──────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🌋 Sismos", "☀️ Clima", "🚀 Espaço", "🔭 NASA", " 🧠 AI"])
+tab1, tab2, tab3, tab4 = st.tabs(["🌋 Sismos", "☀️ Clima", "🚀 Espaço", "🔭 NASA"])
 
 with tab1:
     st.subheader("Últimos Terremotos")
@@ -368,3 +364,4 @@ with col_ia2:
 
 st.success("✅ Sistema Cyber Globe operando com todos os módulos ativos e sincronizados em tempo real.")
 st.caption("🌐 Cyber Globe System | Powered by NASA • USGS • OpenWeather • SpaceX API | Daniel Ramos Junior")
+
