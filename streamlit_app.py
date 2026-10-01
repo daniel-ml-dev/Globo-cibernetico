@@ -276,9 +276,6 @@ if layers:
         initial_view_state=view_state,
         map_style="https://basemaps.cartocdn.com/g1/darck-matter-g1-style/style.json",
 
-10:45 PM (0 minutes ago)
-to me
-
         tooltip={
             "html": "<b>Local:</b> {place}<br/><b>Mag:</b> {mag}",
             "style": {"color": "white"}
