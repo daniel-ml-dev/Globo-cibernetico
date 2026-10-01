@@ -9,7 +9,7 @@ import numpy as np
 
 # ──────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
-# ──────────────────────────────────────────────
+# ───────────────────────────────────────────F───
 st.set_page_config(
     page_title="🌐 Cyber Globe | Sistema Global",
     page_icon="🌍",
@@ -272,7 +272,7 @@ if layers:
     r = pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
-        map_style="mapbox://styles/mapbox/satellite-streets-v12"
+        map_style="mapbox://styles/mapbox/satellite-streets-v12",
         tooltip={
             "html": "<b>Local:</b> {place}<br/><b>Mag:</b> {mag}",
             "style": {"color": "white"}
