@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
-
+OPENWEATHER_API_KEY = "d30329c548a6c0018fbf4918081d54e1
 # ──────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
 # ──────────────────────────────────────────────
