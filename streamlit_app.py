@@ -286,7 +286,7 @@ st.divider()
 # ──────────────────────────────────────────────
 # ABA: DADOS DETALHADOS
 # ──────────────────────────────────────────────
-tab1, tab2, tab3, tab4 = st.tabs(["🌋 Sismos", "☀️ Clima", "🚀 Espaço", "🔭 NASA"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🌋 Sismos", "☀️ Clima", "🚀 Espaço", "🔭 NASA", " 🧠 AI"])
 
 with tab1:
     st.subheader("Últimos Terremotos")
