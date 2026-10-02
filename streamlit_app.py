@@ -325,7 +325,7 @@ with tab4:
     if nasa and "url" in nasa:
         st.subheader(nasa.get("title", ""))
         if nasa.get("media_type") == "image":
-            st.image(nasa["url"], use_column_width=True)
+            st.image(nasa["url"], use_container_width=True)
         st.markdown(nasa.get("explanation", ""))
     else:
         st.info("Dados NASA indisponíveis. Configure sua chave de API.")
